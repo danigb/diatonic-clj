@@ -1,14 +1,20 @@
 # diatonic
 
-A Clojure library designed to ... well, that part is up to you.
+> Music notation library for Clojure
 
-## Usage
+```clojure
+(require '[diatioic.note :as note])
 
-FIXME
+(note/pitch-class "fx6") ; => "F##"
+(note/midi "C4") ; => 60
+(note/transpose "C4" "5P") ; => "G4"
+```
+
+## Use
+
+Not published yet.
 
 ## License
-
-Copyright © 2017 FIXME
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
