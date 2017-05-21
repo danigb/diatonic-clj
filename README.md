@@ -2,6 +2,8 @@
 
 > Music notation library for Clojure
 
+Work in progress. Not ready to be used yet.
+
 ```clojure
 (require '[diatioic.note :as note])
 
