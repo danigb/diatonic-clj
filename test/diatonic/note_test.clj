@@ -1,7 +1,9 @@
 (ns diatonic.test.note
-  (:require [clojure.test :refer :all]
-            [diatonic.note :as note]))
+  (:use [clojure.test])
+  (:require [diatonic.note :refer :all]))
 
-(deftest pitch-class
-  (is (= "C" (note/pitch-class "C4")))
-  (is (= "F##" (note/pitch-class "fx"))))
+(deftest pitch-class-test
+  (is (= "C" (pitch-class (note "C4"))))
+  (is (= "F##" (pitch-class (note "fx")))))
+
+(run-tests)

@@ -12,10 +12,13 @@
 ;; Return the number of fifths as if it were unaltered
 (defn- fifths->step [fifths] (nth [3 0 4 1 5 2 6] (mod (+ fifths 1) 7)))
 
-(defn decode [[fifths octs]]
-  (let [step (fifths->step fifths)]
-    [step 0 0]))
+(defn- floor [r] (Math/floor r))
 
+(defn decode [[fifths octs]]
+  (let [step (fifths->step fifths)
+        alt (floor (/ (+ fifths 1) 7))
+        oct (if octs (int (+ octs (* alt 4) (step->octs step))))]
+    [step alt oct]))
 
 (defn note->distance [note]
   (encode (note/step note) (note/alteration note) (note/octave note)))
@@ -23,8 +26,7 @@
 (defn distance->note [dist]
   (let [[step alt oct] (decode dist)
         letter (note/step->letter step)
-        acc (note/alteration->accidentals)
-        oct nil]
+        acc (note/alteration->accidentals alt)]
     [letter acc oct]))
 
 

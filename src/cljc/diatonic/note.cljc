@@ -30,7 +30,7 @@
 (defn letter->step [letter]
   (if letter (mod (+ (int (first letter)) 3) 7) nil))
 
-(defin step->letter [step]
+(defn step->letter [step]
   (nth ["C" "D" "E" "F" "G" "A" "B"] step))
 
 (def step
@@ -46,10 +46,13 @@
   (let [len (count acc)]
     (if (= (first acc) \b) (* -1 len) len)))
 
-;; TODO: fixme absolute value of num!!
+;; FIXME: I can't belive this is not part of the standard library
+(defn- abs [n]
+  (if (< n 0) (- n) n))
+
 (defn alteration->accidentals [num]
   (let [c (if (> num 0) \# \b)]
-    (str/join (repeat num c))))
+    (str/join (repeat (abs num) c))))
 
 (defn alteration [note]
   (accidentals->alteration (accidentals note)))
