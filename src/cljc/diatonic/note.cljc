@@ -1,5 +1,14 @@
 (ns diatonic.note
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [diatonic.utils :refer [abs]]))
+
+(defrecord Note [letter alteration octave])
+
+
+;; is that necesary?
+(defn letter [note] (:letter note))
+(defn alteration [note] (:alteration note))
+(defn octave [note] (:octave note))
 
 (def pattern #"^([a-gA-G])(#{1,}|b{1,}|x{1,}|)(-?\d*)(.*)$")
 
@@ -16,16 +25,12 @@
   (let [lt (str/upper-case letter)
         acc (str/replace accidentals #"x" "##")
         oct (if (= octave "") nil (Integer/parseInt octave))]
-    [lt acc oct]))
+    (Note. lt acc oct)))
 
 (defn note [str]
   "Create a note from a string"
   (let [[parsed letter acc oct type] (re-find pattern str)]
     (if (and parsed (= type "")) (normalize letter acc oct) nil)))
-
-(defn letter [note]
-  "Retrieve the letter of a given note (always in upper case)"
-  (if note (first note) nil))
 
 (defn letter->step [letter]
   (if letter (mod (+ (int (first letter)) 3) 7) nil))
@@ -33,45 +38,29 @@
 (defn step->letter [step]
   (nth ["C" "D" "E" "F" "G" "A" "B"] step))
 
-(def step
-  "Get the step number of a note (C = 0, D = 1..., B = 6)"
-  (comp letter->step letter))
-
-(defn accidentals [note]
-  "Get the accidentals of a note"
-  (second note))
+(defn step [note] (letter->step (letter note)))
 
 (defn accidentals->alteration [acc]
   "Return the int value of accidentals string"
   (let [len (count acc)]
     (if (= (first acc) \b) (* -1 len) len)))
 
-;; FIXME: I can't belive this is not part of the standard library
-(defn- abs [n]
-  (if (< n 0) (- n) n))
-
 (defn alteration->accidentals [num]
   (let [c (if (> num 0) \# \b)]
     (str/join (repeat (abs num) c))))
 
 (defn alteration [note]
-  (accidentals->alteration (accidentals note)))
+  (accidentals->alteration (:accidentals note)))
 
 (defn pitch-class [note]
   "Get the note pitch class"
   (if note
-    (str (letter note) (accidentals note))
+    (str (:letter note) (:accidentals note))
     nil))
 
-(defn octave [note]
-  "Return the octave of a note (0 if the note is not valid)"
-  (nth note 2))
-
-;; TODO: return an array?
-(defn in-octave [note oct]
+(defn with-octave [note oct]
   "Return the note in a given octave"
-  (let [pc (pitch-class note)]
-    (if pc (str pc oct) nil)))
+  (Note. (:letter note) (:accidentals note) oct))
 
 (defn chroma [note]
   "Get the chroma number of a note (the pitch class numeric value from 0 to 6)"

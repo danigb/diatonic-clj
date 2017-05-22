@@ -1,5 +1,7 @@
 (ns diatonic.distance
-  (:require [diatonic.note :as note]))
+  (:require [diatonic.note :as note]
+            [diatonic.interval :as ivl]
+            [diatonic.utils :refer [floor]]))
 
 (defn- step->fifths [step] (nth [0 2 4 -1 1 3 5] step))
 (defn- step->octs [step] (nth [0 1 2 -1 0 1 2] step))
@@ -12,12 +14,11 @@
 ;; Return the number of fifths as if it were unaltered
 (defn- fifths->step [fifths] (nth [3 0 4 1 5 2 6] (mod (+ fifths 1) 7)))
 
-(defn- floor [r] (Math/floor r))
 
 (defn decode [[fifths octs]]
   (let [step (fifths->step fifths)
         alt (floor (/ (+ fifths 1) 7))
-        oct (if octs (int (+ octs (* alt 4) (step->octs step))))]
+        oct (if octs (floor (+ octs (* alt 4) (step->octs step))))]
     [step alt oct]))
 
 (defn note->distance [note]
@@ -29,7 +30,7 @@
         acc (note/alteration->accidentals alt)]
     [letter acc oct]))
 
+(defn interval->distance [interval]
+  (encode (ivl/step interval) (ivl/alteration interval) (ivl/octaves interval)))
 
-(note/note "Bb3")
-(note->distance (note/note "Bb3"))
-(distance->note [-2 5])
+(interval->distance (ivl/interval "2M"))
