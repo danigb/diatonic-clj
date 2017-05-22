@@ -8,6 +8,10 @@
   (let [match (re-find pattern str)]
     (if (and match (= (nth match 4) "")) (rest match) nil)))
 
+(defn note? [note]
+  "Test if a string is a note"
+  (if (parse note) true false))
+
 (defn- normalize [letter accidentals octave]
   (let [lt (str/upper-case letter)
         acc (str/replace accidentals #"x" "##")
@@ -19,10 +23,6 @@
   (let [[parsed letter acc oct type] (re-find pattern str)]
     (if (and parsed (= type "")) (normalize letter acc oct) nil)))
 
-(defn note? [note]
-  "Test if a string is a note"
-  (if (parse note) true false))
-
 (defn letter [note]
   "Retrieve the letter of a given note (always in upper case)"
   (if note (first note) nil))
@@ -30,21 +30,29 @@
 (defn letter->step [letter]
   (if letter (mod (+ (int (first letter)) 3) 7) nil))
 
-(defn step [note]
+(defin step->letter [step]
+  (nth ["C" "D" "E" "F" "G" "A" "B"] step))
+
+(def step
   "Get the step number of a note (C = 0, D = 1..., B = 6)"
-  (letter->step (letter note)))
+  (comp letter->step letter))
 
 (defn accidentals [note]
   "Get the accidentals of a note"
   (second note))
 
-(defn accidentals->int [acc]
+(defn accidentals->alteration [acc]
   "Return the int value of accidentals string"
   (let [len (count acc)]
     (if (= (first acc) \b) (* -1 len) len)))
 
+;; TODO: fixme absolute value of num!!
+(defn alteration->accidentals [num]
+  (let [c (if (> num 0) \# \b)]
+    (str/join (repeat num c))))
+
 (defn alteration [note]
-  (accidentals->int (accidentals note)))
+  (accidentals->alteration (accidentals note)))
 
 (defn pitch-class [note]
   "Get the note pitch class"
