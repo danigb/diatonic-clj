@@ -18,9 +18,9 @@
   "Get the step of an interval given it's interval number"
   (mod (- (abs inum) 1) 7))
 
-(defn inum->type [inum]
-  "Get the type of a interval given it's interval number"
-  (nth ["P" "M" "M" "P" "P" "M" "M"] (inum->step inum)))
+(defn step->type [step]
+  "Get the type of a interval given it step number"
+  (nth ["P" "M" "M" "P" "P" "M" "M"] step))
 
 (defn inum->octave [num]
   "Get the number of octaves of a interval number"
@@ -40,14 +40,24 @@
 
 (defn ->pitch [ivl]
   (let [[inum quality] (split ivl)
-        type (inum->type inum)
         step (inum->step inum)
+        type (step->type step)
         alt (alteration type quality)
-        oct (inum->octave inum)]
-    {:step step :alteration alt :octave oct}))
+        oct (inum->octave inum)
+        pitch {:step step :alteration alt :octave oct}]
+    (if (< oct 0) (invert-pitch pitch) pitch)))
+
+(->pitch "A5")
+(->pitch "A-5")
+
+(defn invert-pitch [{step :step alt :alteration oct :octave}]
+  (let [s (mod (- 7 step) 7)
+        type (step->type step)
+        a (if (= type "P") (- alt) (- (inc alt)))]
+    {:step s :alteration a :octave oct}))
 
 (defn pitch->quality [{step :step alt :alteration}]
-  (let [type (inum->type (inc step))]
+  (let [type (step->type step)]
     (cond
       (= 0 alt) (if (= type "M") "M" "P")
       (and (= -1 alt) (= type "M")) "m"
@@ -62,6 +72,10 @@
 
 (defn pitch->interval [pitch]
   "Convert a pitch into an interval string"
-  (let [q (pitch->quality pitch)
-        inum (pitch->inum pitch)]
+  (let [p (if (< (:octave pitch) 0) (invert-pitch pitch) pitch)
+        q (pitch->quality p)
+        inum (pitch->inum p)]
     (str q inum)))
+
+(defn invert [interval]
+  (pitch->interval (invert-pitch (->pitch interval))))
