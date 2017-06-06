@@ -1,40 +1,44 @@
 (ns diatonic.distance
-  (:require [diatonic.note :as note]
+  (:require [diatonic.note :as nt]
             [diatonic.interval :as ivl]
             [diatonic.utils :refer [floor]]))
 
 (defn- step->fifths [step] (nth [0 2 4 -1 1 3 5] step))
 (defn- step->octs [step] (nth [0 1 2 -1 0 1 2] step))
 
-(defn encode [step alt oct]
-  (let [fifths (+ (step->fifths step) (* alt 7))
-        foct (if oct (- oct (step->octs step) (* alt 4)))]
-    [fifths foct]))
+(defn pitch->distance [{:keys [step alteration octave]}]
+  (let [fifths (+ (step->fifths step) (* alteration 7))
+        foct (if octave (- octave (step->octs step) (* alteration 4)))]
+    {:fifths fifths :octaves foct}))
 
 ;; Return the number of fifths as if it were unaltered
 (defn- fifths->step [fifths] (nth [3 0 4 1 5 2 6] (mod (+ fifths 1) 7)))
 
-
-(defn decode [[fifths octs]]
+(defn distance->pitch [{:keys [fifths octaves]}]
   (let [step (fifths->step fifths)
         alt (floor (/ (+ fifths 1) 7))
-        oct (if octs (floor (+ octs (* alt 4) (step->octs step))))]
-    [step alt oct]))
+        oct (if octaves (floor (+ octaves (* alt 4) (step->octs step))))]
+    {:step step :alteration alt :octave oct}))
 
-(defn note->distance [note]
-  (encode (note/step note) (note/alteration note) (note/octave note)))
+(defn sum [a b]
+  "Add two distances"
+  {:fifths (+ (:fifths a) (:fifths b))
+   :octaves (+ (:octaves a) (:octaves b))})
 
-(defn distance->note [distance]
-  (let [[step alt oct] (decode distance)
-        letter (note/step->letter step)
-        acc (note/alteration->accidentals alt)]
-    [letter acc oct]))
+(defn subs [a b]
+  "Substract two distances"
+  {:fifths (- (:fifths a) (:fifths b))
+   :octaves (- (:octaves a) (:octaves b))})
 
-(defn interval->distance [interval]
-  (encode (ivl/step interval) (ivl/alteration interval) (ivl/octaves interval)))
+(defn transpose [note interval]
+  (let [n (pitch->distance (nt/->pitch note))
+        i (pitch->distance (ivl/->pitch interval))]
+    (nt/pitch->note (distance->pitch (sum n i)))))
 
-(defn distance->interval [distance]
-  (let [[step alt oct] (decode distance)
-        num (ivl/simple->number step oct)
-        quality (ivl/alt->quality alt step)]
-    [num quality]))
+(defn transpose-by [interval note]
+  (transpose note interval))
+
+(defn interval [a b]
+  (let [pa (pitch->distance (nt/->pitch a))
+        pb (pitch->distance (nt/->pitch b))]
+    (ivl/pitch->interval (distance->pitch (subs pb pa)))))

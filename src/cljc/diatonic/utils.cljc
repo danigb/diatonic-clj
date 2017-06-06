@@ -7,4 +7,9 @@
   (if (< n 0) (- n) n))
 
 ;; FIXME: make it compatible with ClojureScript
-(defn floor [r] (Math/floor r))
+(defn floor [r] (int (Math/floor r)))
+
+;; FIXME: make it compatible with ClojureScript
+(defn parse-int [s] (Integer/parseInt s))
+
+(defn fill-str [s n] (apply str (repeat n s)))

@@ -1,64 +1,67 @@
 (ns diatonic.interval
-  (:require [diatonic.utils :refer [abs floor]]
+  (:require [diatonic.utils :refer [abs floor parse-int fill-str]]
             [clojure.string :as str]))
-;; inverse shorthand notation (with quality after number, preferred)
 
-(defrecord Interval [number quality])
-(defn number [interval] (:number interval))
-(defn quality [interval] (:quality interval))
-
-(def pattern #"(?x) # allow whitspace and comments
-  ^(?: # a composition of two different notations
-    ([-+]?\d+)(d{1,4}|m|M|P|A{1,4}) # inverse shorthand notation
-  )|(?:
-    (d{1,4}|m|M|P|A{1,4})([-+]?\d+) # normal shorthand notation
-  )$
+(def pattern #"(?x) # allow whitespaces and comments
+  ([-+]?\d+)(d{1,4}|m|M|P|A{1,4}) # inverse shorthand notation (preferred)
+  |
+  (d{1,4}|m|M|P|A{1,4})([-+]?\d+) # normal shorthand notation
 ")
 
-;; FIXME: check if is a valid quality for that number
-(defn- normalize [num quality]
-  (Interval. (Integer/parseInt num) quality))
-
-(defn interval [str]
-  "Create an interval from a string"
+(defn split [str]
+  "Split an interval string into its components:
+    numbera and quality"
   (let [[parsed n1 q1 q2 n2] (re-find pattern str)]
-    (if parsed
-      (if n1 (normalize n1 q1) (normalize n2 q2)))))
+        (if parsed (if n1 [(parse-int n1) q1] [(parse-int n2) q2]) nil)))
 
-(defn number->step [number]
-  (mod (- (abs number) 1) 7))
+(defn inum->step [inum]
+  "Get the step of an interval given it's interval number"
+  (mod (- (abs inum) 1) 7))
 
-(defn step [interval]
-  (number->step (number interval)))
+(defn inum->type [inum]
+  "Get the type of a interval given it's interval number"
+  (nth ["P" "M" "M" "P" "P" "M" "M"] (inum->step inum)))
 
-(defn number->simple [number]
-  (+ (number->step number) 1))
-
-(defn number->type [number]
-  (nth ["P" "M" "M" "P" "P" "M" "M"] (number->step number)))
-
-(defn type [interval]
-  (number->type (number interval)))
-
-(defn alteration [interval]
-  (let [type (type interval)
-        q (quality interval)]
-       (if (= type "P")
-         (cond
-           (str/starts-with? q "A") (count q)
-           (str/starts-with? q "d") (- (count q))
-           :else 0)
-         (cond
-           (= q "m") -1
-           (str/starts-with? q "A") (count q)
-           (str/starts-with? q "d") (- (count q) -1)
-           :else 0)
-           )))
-
-(defn num->octaves [num]
+(defn inum->octave [num]
+  "Get the number of octaves of a interval number"
   (floor (/ (- num 1) 7)))
 
-(defn octaves [interval]
-  (num->octaves (number interval)))
+(defn alteration [type q]
+  (if (= type "P")
+    (cond
+      (str/starts-with? q "A") (count q)
+      (str/starts-with? q "d") (- (count q))
+      :else 0)
+    (cond
+      (= q "m") -1
+      (str/starts-with? q "A") (count q)
+      (str/starts-with? q "d") (- (count q) -1)
+      :else 0)))
 
-(def simple->number [])
+(defn ->pitch [ivl]
+  (let [[inum quality] (split ivl)
+        type (inum->type inum)
+        step (inum->step inum)
+        alt (alteration type quality)
+        oct (inum->octave inum)]
+    {:step step :alteration alt :octave oct}))
+
+(defn pitch->quality [{step :step alt :alteration}]
+  (let [type (inum->type (inc step))]
+    (cond
+      (= 0 alt) (if (= type "M") "M" "P")
+      (and (= -1 alt) (= type "M")) "m"
+      (< 0 alt) (fill-str "A" alt)
+      (< alt 0) (fill-str "d" (- alt))
+      :else nil)))
+
+(defn pitch->inum [{step :step oct :octave}]
+  (if (< oct 0)
+    (- (+ step (* -7 (inc oct)) 1))
+    (+ step (* 7 oct) 1)))
+
+(defn pitch->interval [pitch]
+  "Convert a pitch into an interval string"
+  (let [q (pitch->quality pitch)
+        inum (pitch->inum pitch)]
+    (str q inum)))
