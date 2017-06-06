@@ -6,7 +6,7 @@
 
 (defn split [str]
   "Split a music note in scientific notation into its components:
-   step, accidentals and octave"
+   letter, accidentals and octave"
   (let [[m l a o q] (re-find pattern str)]
     (if (and m (= q ""))
       (let [letter (str/upper-case l)

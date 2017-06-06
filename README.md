@@ -2,7 +2,7 @@
 
 > Music notation library for Clojure and ClojureScript
 
-Work in progress. Not ready to be used yet.
+Work in progress.
 
 ```clojure
 (require '[diatonic.note :as note]
@@ -10,15 +10,17 @@ Work in progress. Not ready to be used yet.
          '[diatonic.distance :as dist])
 
 ; Notes
-(note/pitch-class "fx6") ; => "F##"
-(note/midi "C4") ; => 60
+(note/note? "cm") ; false
+(note/split "abb3") ; ["A" "bb" 3]
+(note/pitch-class "fx6") ; "F##"
+(note/midi "C4") ; 60
 
 ; Intervals
-(ivl/invert "P5") ; => "P4"
+(ivl/invert "P5") ; "P4"
 
 ; Distances
-(dist/transpose "C4" "5P") ; => "G4"
-(dist/interval "C4" "G4") ; => "P5"
+(dist/transpose "C4" "5P") ; "G4"
+(dist/interval "C4" "G4") ; "P5"
 ```
 
 ## Use

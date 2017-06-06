@@ -46,7 +46,7 @@
     {:step s :alteration a :octave oct}))
 
 (defn pitch [ivl]
-  "Get interval in pitch notation (step, atl, oct)"
+  "Get interval in pitch notation (step, alteration, octave)"
   (let [[inum quality] (split ivl)
         step (inum->step inum)
         type (step->type step)
@@ -56,6 +56,7 @@
     (if (< oct 0) (invert-pitch pitch) pitch)))
 
 (defn- pitch->quality [{step :step alt :alteration}]
+  "Convert a pitch (step alteration) to a quality string"
   (let [type (step->type step)]
     (cond
       (= 0 alt) (if (= type "M") "M" "P")
@@ -65,6 +66,7 @@
       :else nil)))
 
 (defn- pitch->inum [{step :step oct :octave}]
+  "Convert a pitch (step octave) to a interval number"
   (if (< oct 0)
     (- (+ step (* -7 (inc oct)) 1))
     (+ step (* 7 oct) 1)))
@@ -76,6 +78,19 @@
         inum (pitch->inum p)]
     (str q inum)))
 
+; FIXME: invert descending intervals
 (defn invert [interval]
   "Get the inversion of a given interval"
   (pitch->interval (invert-pitch (pitch interval))))
+
+; FIXME: simplify descending intervals
+(defn- simplify-pitch [{step :step oct :octave :as pitch}]
+  (if (and (= step 0) (= oct 1)) pitch
+    (assoc pitch :octave 0)))
+
+(defn simplify [interval]
+  "Get the simplified interval"
+  (pitch->interval (simplify-pitch (pitch interval))))
+
+(simplify "M10") "P5"
+; (simplify "P-11") "P5"
