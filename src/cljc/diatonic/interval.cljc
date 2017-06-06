@@ -60,3 +60,5 @@
 
 (defn octaves [interval]
   (num->octaves (number interval)))
+
+(def simple->number [])

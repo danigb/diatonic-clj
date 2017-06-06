@@ -24,8 +24,8 @@
 (defn note->distance [note]
   (encode (note/step note) (note/alteration note) (note/octave note)))
 
-(defn distance->note [dist]
-  (let [[step alt oct] (decode dist)
+(defn distance->note [distance]
+  (let [[step alt oct] (decode distance)
         letter (note/step->letter step)
         acc (note/alteration->accidentals alt)]
     [letter acc oct]))
@@ -33,4 +33,8 @@
 (defn interval->distance [interval]
   (encode (ivl/step interval) (ivl/alteration interval) (ivl/octaves interval)))
 
-(interval->distance (ivl/interval "2M"))
+(defn distance->interval [distance]
+  (let [[step alt oct] (decode distance)
+        num (ivl/simple->number step oct)
+        quality (ivl/alt->quality alt step)]
+    [num quality]))
