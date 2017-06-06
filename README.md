@@ -1,15 +1,24 @@
 # diatonic
 
-> Music notation library for Clojure
+> Music notation library for Clojure and ClojureScript
 
 Work in progress. Not ready to be used yet.
 
 ```clojure
-(require '[diatioic.note :as note])
+(require '[diatonic.note :as note]
+         '[diatonic.interval :as ivl])
+         '[diatonic.distance :as dist])
 
+; Notes
 (note/pitch-class "fx6") ; => "F##"
 (note/midi "C4") ; => 60
-(note/transpose "C4" "5P") ; => "G4"
+
+; Intervals
+(ivl/invert "P5") ; => "P4"
+
+; Distances
+(dist/transpose "C4" "5P") ; => "G4"
+(dist/interval "C4" "G4") ; => "P5"
 ```
 
 ## Use

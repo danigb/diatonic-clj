@@ -31,14 +31,14 @@
    :octaves (- (:octaves a) (:octaves b))})
 
 (defn transpose [note interval]
-  (let [n (pitch->distance (nt/->pitch note))
-        i (pitch->distance (ivl/->pitch interval))]
+  (let [n (pitch->distance (nt/pitch note))
+        i (pitch->distance (ivl/pitch interval))]
     (nt/pitch->note (distance->pitch (sum n i)))))
 
 (defn transpose-by [interval note]
   (transpose note interval))
 
 (defn interval [a b]
-  (let [pa (pitch->distance (nt/->pitch a))
-        pb (pitch->distance (nt/->pitch b))]
+  (let [pa (pitch->distance (nt/pitch a))
+        pb (pitch->distance (nt/pitch b))]
     (ivl/pitch->interval (distance->pitch (subs pb pa)))))

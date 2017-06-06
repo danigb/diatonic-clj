@@ -28,12 +28,8 @@
   (let [len (count acc)]
     (if (= (first acc) \b) (* -1 len) len)))
 
-(defn string->octave [str]
-  "Get the value of a string representing an octave"
-  (if (and str (> (count str) 0)) (parse-int str) nil))
-
-(defn ->pitch [str]
-  "Convert a note into a pitch"
+(defn pitch [str]
+  "Convert a note into a pitch notation (step, alteration, octave)"
   (let [[letter acc oct] (split str)
         step (letter->step letter)
         alt (accidentals->alteration acc)]
@@ -43,10 +39,12 @@
   (nth ["C" "D" "E" "F" "G" "A" "B"] step))
 
 (defn alteration->accidentals [num]
+  "Convert an alteration number to accidentals string"
   (let [c (if (> num 0) \# \b)]
     (str/join (repeat (abs num) c))))
 
 (defn pitch->note [{:keys [step alteration octave]}]
+  "Convert a pitch into a note string"
   (let [letter (step->letter step)
         acc (alteration->accidentals alteration)]
     (if octave (str letter acc octave) (str letter acc))))
@@ -61,17 +59,17 @@
   (let [[l a] (split note)]
     (if l (str l a oct) nil)))
 
-(defn pitch->chroma [{:keys [step alteration]}]
+(defn- pitch->chroma [{:keys [step alteration]}]
   "Get the chroma of a pitch"
   (mod (+ step alteration) 7))
 
 (defn chroma [note]
   "Get the chroma of a note"
-  (pitch->chroma (->pitch note)))
+  (pitch->chroma (pitch note)))
 
 (defn midi [note]
   "Get the midi value of a note"
-  (let [pitch (->pitch note)]
+  (let [pitch (pitch note)]
     (if (:octave pitch)
       (+ (pitch->chroma pitch) (* 12 (:octave pitch)) 12)
       nil)))

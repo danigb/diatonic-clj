@@ -9,4 +9,11 @@
                   {:dependencies [[com.cemerick/piggieback "0.2.1"]
                                   [proto-repl "0.3.1"]
                                   [org.clojure/tools.nrepl "0.2.10"]]
-                  :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}})
+                   :plugins [[lein-codox "0.10.3"]]
+                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
+
+  :cljsbuild {:builds {:prod {:source-paths ["src/cljc"]
+                       :compiler     {:output-to     "target/cljs/diatonic.js"
+                                      :optimizations :whitespace}}}}
+
+  :codox {:src-dir-uri "http://github.com/danigb/diatonic/blob/MASTER/"})
