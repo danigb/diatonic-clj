@@ -22,11 +22,12 @@
 
 (defn- add [{fa :fifths oa :octaves} {fb :fifths ob :octaves}]
   "Add two distances"
-  {:fifths (+ fa fb) :octaves (+ oa ob)})
+  {:fifths (+ fa fb) :octaves (if (and oa ob) (+ oa ob) nil)})
 
+; FIXME: better substract between pure fifths
 (defn- substract [{fa :fifths oa :octaves} {fb :fifths ob :octaves}]
   "Substract two distances"
-  {:fifths (- fa fb) :octaves (- oa ob)})
+  {:fifths (- fa fb) :octaves (if (and oa ob) (+ oa ob) 0)})
 
 (defn- operate [fn a b]
   (distance->pitch (fn (pitch->distance a) (pitch->distance b))))
@@ -42,5 +43,3 @@
 (defn interval [a b]
   "Get the interval between two notes"
   (ivl/pitch->interval (operate substract (nt/pitch b) (nt/pitch a))))
-
-(interval "c3" "db2")
